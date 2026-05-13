@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="panel" class="panel">
+
+    <!-- Drag handle -->
+    <div id="drag-handle" class="drag-handle">
+      <span class="dots">· · · · ·</span>
+    </div>
+
+    <!-- Music player row -->
+    <div class="player-row">
+      <button id="upload-btn" class="icon-btn" title="Load music file">📂</button>
+      <div class="track-info">
+        <span id="track-name" class="track-name">no track loaded</span>
+      </div>
+      <button id="play-btn" class="play-btn" disabled title="Play / Pause (Space)">▶</button>
+      <span id="time-display" class="time-display">0:00 / 0:00</span>
+    </div>
+
+    <!-- Progress bar -->
+    <div id="progress-bar" class="progress-bar">
+      <div id="progress-fill" class="progress-fill"></div>
+      <div id="progress-thumb" class="progress-thumb"></div>
+    </div>
+
+    <!-- Drum pads -->
+    <div class="pads-row">
+      <div class="pad-wrap">
+        <div id="pad-left" class="pad pad-left">
+          <span class="pad-key">F</span>
+          <span class="pad-label">KICK</span>
+        </div>
+      </div>
+      <div class="pad-divider"></div>
+      <div class="pad-wrap">
+        <div id="pad-right" class="pad pad-right">
+          <span class="pad-key">J</span>
+          <span class="pad-label">SNARE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer hint -->
+    <div class="footer-hint">click panel to focus · then F / J to hit · Space to play/pause</div>
+
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

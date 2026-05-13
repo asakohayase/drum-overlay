@@ -1,0 +1,12 @@
+{
+  "name": "drum-overlay",
+  "version": "1.0.0",
+  "description": "Transparent drum practice overlay — upload music and hit the beat with F and J",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}
