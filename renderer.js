@@ -123,23 +123,96 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'f' || e.key === 'F') hitPad(padLeft,  playKick,  'kick');
   if (e.key === 'j' || e.key === 'J') hitPad(padRight, playSnare, 'snare');
   if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+  if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd')      changeScale(+0.1);
+  if (e.key === '-'               || e.code === 'NumpadSubtract')    changeScale(-0.1);
 });
 
 // Mouse clicks on pads (also works as fallback)
 padLeft.addEventListener('mousedown',  (e) => { e.stopPropagation(); hitPad(padLeft,  playKick,  'kick');  });
 padRight.addEventListener('mousedown', (e) => { e.stopPropagation(); hitPad(padRight, playSnare, 'snare'); });
 
+// ── Library ─────────────────────────────────────────────
+const libraryBtn   = document.getElementById('library-btn');
+const libraryPanel = document.getElementById('library-panel');
+const libraryList  = document.getElementById('library-list');
+
+let currentTrackId = null;
+let libraryEntries = [];
+
+async function initLibrary() {
+  if (!window.api) return;
+  libraryEntries = await window.api.getLibrary();
+  renderLibrary();
+}
+
+function renderLibrary() {
+  if (!libraryEntries.length) {
+    libraryList.innerHTML = '<div class="library-empty">No tracks saved yet</div>';
+    return;
+  }
+  libraryList.innerHTML = '';
+  libraryEntries.forEach(entry => {
+    const item = document.createElement('div');
+    item.className = 'library-item' + (entry.id === currentTrackId ? ' current' : '');
+    item.innerHTML = `
+      <span class="lib-name">${entry.name}</span>
+      <button class="lib-remove" title="Remove">✕</button>
+    `;
+    item.querySelector('.lib-remove').addEventListener('click', async e => {
+      e.stopPropagation();
+      libraryEntries = await window.api.removeFromLibrary(entry.id);
+      if (currentTrackId === entry.id) currentTrackId = null;
+      renderLibrary();
+    });
+    item.addEventListener('click', () => loadLibraryEntry(entry));
+    libraryList.appendChild(item);
+  });
+}
+
+async function loadLibraryEntry(entry) {
+  const result = await window.api.loadLibraryTrack(entry.filePath);
+  if (!result.ok) { alert(`File not found:\n${entry.filePath}`); return; }
+  currentTrackId = entry.id;
+  audio.src = result.dataUrl;
+  audio.load();
+  trackName.textContent = entry.name;
+  playBtn.disabled = false;
+  resetGame();
+  analyzeSong(result.dataUrl);
+  renderLibrary();
+}
+
+libraryBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const open = libraryPanel.classList.toggle('open');
+  if (open) {
+    const btnRect   = libraryBtn.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    libraryPanel.style.top  = (btnRect.bottom - panelRect.top + 6) + 'px';
+    libraryPanel.style.left = (btnRect.left   - panelRect.left)    + 'px';
+  }
+});
+
+document.addEventListener('click', e => {
+  if (!libraryPanel.contains(e.target) && e.target !== libraryBtn) {
+    libraryPanel.classList.remove('open');
+  }
+});
+
 // ── Music upload ────────────────────────────────────────
 uploadBtn.addEventListener('click', async () => {
   if (!window.api) return;
   const result = await window.api.pickMusic();
   if (!result) return;
+  currentTrackId = result.filePath;
   audio.src = result.dataUrl;
   audio.load();
   trackName.textContent = result.name;
   playBtn.disabled = false;
   resetGame();
   analyzeSong(result.dataUrl);
+  libraryEntries = await window.api.addToLibrary({ id: result.filePath, name: result.name, filePath: result.filePath });
+  renderLibrary();
 });
 
 // ── Audio element ───────────────────────────────────────
@@ -202,7 +275,7 @@ function togglePlay() {
   if (!audio.src) return;
   if (countInBeat >= 0) { cancelCountIn(); return; }
   if (audio.paused) {
-    if (audio.currentTime < 0.5) {
+    if (audio.currentTime < 0.5 || audio.ended) {
       resetGame();
       startCountIn();
     } else {
@@ -227,9 +300,54 @@ progressBar.addEventListener('mousedown', (e) => { isSeeking = true; seekTo(e); 
 document.addEventListener('mousemove',    (e) => { if (isSeeking) seekTo(e); });
 document.addEventListener('mouseup',      ()  => { isSeeking = false; });
 
+// ── Panel scale (numpad +/-) ────────────────────────────
+let panelScale = parseFloat(localStorage.getItem('panelScale')) || 1.0;
+
+function applyPanelScale() {
+  if (panel.style.bottom === 'auto') {
+    // Already in explicit left/top mode — scale from top-left,
+    // but shift so the visual centre stays fixed.
+    panel.style.transformOrigin = 'top left';
+  } else {
+    // Default anchored position — scale from bottom centre.
+    panel.style.transformOrigin = 'center bottom';
+    panel.style.transform = `translateX(-50%) scale(${panelScale})`;
+    return;
+  }
+  panel.style.transform = `scale(${panelScale})`;
+}
+
+function changeScale(delta) {
+  const next = Math.round(Math.min(2.0, Math.max(0.5, panelScale + delta)) * 10) / 10;
+  if (next === panelScale) return;
+  // Keep visual centre fixed when already dragged to an explicit position.
+  if (panel.style.bottom === 'auto') {
+    const W = panel.offsetWidth;
+    const H = panel.offsetHeight;
+    const l = parseFloat(panel.style.left) || 0;
+    const t = parseFloat(panel.style.top)  || 0;
+    panel.style.left = (l + W * (panelScale - next) / 2) + 'px';
+    panel.style.top  = (t + H * (panelScale - next) / 2) + 'px';
+  }
+  panelScale = next;
+  applyPanelScale();
+  localStorage.setItem('panelScale', panelScale);
+}
+
+applyPanelScale();
+
 // ── Drag panel ──────────────────────────────────────────
 let isDragging = false;
 let dragOffX = 0, dragOffY = 0;
+
+function snapPanelCoords() {
+  const rect = panel.getBoundingClientRect();
+  panel.style.bottom          = 'auto';
+  panel.style.left            = rect.left + 'px';
+  panel.style.top             = rect.top  + 'px';
+  panel.style.transformOrigin = 'top left';
+  panel.style.transform       = `scale(${panelScale})`;
+}
 
 // Whole panel is draggable — skip only the interactive controls
 panel.addEventListener('mousedown', (e) => {
@@ -240,13 +358,10 @@ panel.addEventListener('mousedown', (e) => {
       e.target.closest('.taiko-row')) return;
 
   isDragging = true;
+  snapPanelCoords();
   const rect = panel.getBoundingClientRect();
   dragOffX = e.clientX - rect.left;
   dragOffY = e.clientY - rect.top;
-  panel.style.bottom    = 'auto';
-  panel.style.transform = 'none';
-  panel.style.left      = rect.left + 'px';
-  panel.style.top       = rect.top  + 'px';
   e.preventDefault();
 });
 
@@ -299,7 +414,7 @@ let missFlash  = 0;        // red flash intensity on miss
 let failMode   = false;
 let missCount  = 0;
 let gameFailed = false;
-const FAIL_LIMIT = 3;
+const FAIL_LIMIT = 5;
 
 const taikoCx = (() => {
   const dpr = window.devicePixelRatio || 1;
@@ -577,8 +692,12 @@ function drawNote(cx, nx, ny, isKick, past) {
   cx.globalAlpha = past ? 0.28 : 1.0;
 
   cx.beginPath();
+  cx.arc(nx, ny, NOTE_R + 14, 0, Math.PI * 2);
+  cx.fillStyle = c.glow.replace('0.25', '0.18');
+  cx.fill();
+  cx.beginPath();
   cx.arc(nx, ny, NOTE_R + 7, 0, Math.PI * 2);
-  cx.fillStyle = c.glow;
+  cx.fillStyle = c.glow.replace('0.25', '0.38');
   cx.fill();
 
   cx.beginPath();
@@ -614,8 +733,8 @@ let totalPerfect = 0;
 let totalGood    = 0;
 const hitNotes   = new Set();
 let gameOver     = false;
-let hitFeedback  = null; // { text, y, life }
-let missIdx      = 0;    // pointer into songEvents for miss detection
+let hitFeedback  = null;
+let missIdx      = 0;
 
 function resetGame() {
   cancelCountIn();
@@ -734,15 +853,15 @@ function drawScoreOverlay(cx) {
     cx.fillText('FAILED', LANE_W / 2, LANE_H / 2 - 10);
     cx.font         = '11px Arial';
     cx.fillStyle    = 'rgba(255,255,255,0.45)';
-    cx.fillText(`missed ${missCount} of ${FAIL_LIMIT} allowed`, LANE_W / 2, LANE_H / 2 + 18);
+    cx.fillText(`oh no! ${missCount} misses ( ﾉД\`)`, LANE_W / 2, LANE_H / 2 + 18);
     return;
   }
 
   const hit   = totalPerfect + totalGood;
   const total = songEvents ? songEvents.length : 0;
   const acc   = total > 0 ? Math.round(hit / total * 100) : 0;
-  const rating = acc >= 95 ? 'S' : acc >= 80 ? 'A' : acc >= 65 ? 'B' : acc >= 45 ? 'C' : 'D';
-  const rCol   = { S:'#FFD700', A:'#7FFF00', B:'#4ECDC4', C:'#88CCFF', D:'#AAAAAA' }[rating];
+  const rating = acc >= 100 ? 'SS' : acc >= 95 ? 'S' : acc >= 90 ? 'A' : acc >= 80 ? 'B' : acc >= 70 ? 'C' : 'D';
+  const rCol   = { SS:'#FF6EFF', S:'#FFD700', A:'#7FFF00', B:'#4ECDC4', C:'#88CCFF', D:'#AAAAAA' }[rating];
 
   cx.fillStyle = 'rgba(4,8,20,0.90)';
   cx.fillRect(0, 0, LANE_W, LANE_H);
@@ -802,10 +921,21 @@ function drawTaiko(t) {
     }
   }
 
-  // Lane tints
-  cx.fillStyle = themeColor(true).laneTint;
+  // Lane gradients — bold left-side bloom fading rightward
+  const { h: kh, s: ks, l: kl } = THEMES[themeIdx].kick;
+  const { h: sh, s: ss, l: sl } = THEMES[themeIdx].snare;
+  const kg = cx.createLinearGradient(0, 0, LANE_W, 0);
+  kg.addColorStop(0,    `hsla(${kh},${ks}%,${kl}%,0.22)`);
+  kg.addColorStop(0.18, `hsla(${kh},${ks}%,${kl}%,0.10)`);
+  kg.addColorStop(1,    `hsla(${kh},${ks}%,${kl}%,0.02)`);
+  cx.fillStyle = kg;
   cx.fillRect(0, 0, LANE_W, DIVIDER_Y);
-  cx.fillStyle = themeColor(false).laneTint;
+
+  const sg = cx.createLinearGradient(0, 0, LANE_W, 0);
+  sg.addColorStop(0,    `hsla(${sh},${ss}%,${sl}%,0.22)`);
+  sg.addColorStop(0.18, `hsla(${sh},${ss}%,${sl}%,0.10)`);
+  sg.addColorStop(1,    `hsla(${sh},${ss}%,${sl}%,0.02)`);
+  cx.fillStyle = sg;
   cx.fillRect(0, DIVIDER_Y, LANE_W, LANE_H - DIVIDER_Y);
 
   // Miss flash — red overlay that fades out
@@ -815,15 +945,16 @@ function drawTaiko(t) {
     missFlash = Math.max(0, missFlash - 0.07);
   }
 
-  // Lane divider
-  cx.strokeStyle = 'rgba(255,255,255,0.09)';
-  cx.lineWidth   = 1;
-  cx.beginPath();
-  cx.moveTo(0, DIVIDER_Y); cx.lineTo(LANE_W, DIVIDER_Y);
-  cx.stroke();
+  // Lane divider — glowing line
+  const dg = cx.createLinearGradient(0, DIVIDER_Y - 1, 0, DIVIDER_Y + 1);
+  dg.addColorStop(0,   'rgba(255,255,255,0)');
+  dg.addColorStop(0.5, 'rgba(255,255,255,0.35)');
+  dg.addColorStop(1,   'rgba(255,255,255,0)');
+  cx.fillStyle = dg;
+  cx.fillRect(0, DIVIDER_Y - 1, LANE_W, 2);
 
   // Dashed centerlines
-  cx.strokeStyle = 'rgba(255,255,255,0.04)';
+  cx.strokeStyle = 'rgba(255,255,255,0.10)';
   cx.setLineDash([3, 9]);
   cx.beginPath();
   cx.moveTo(railX, KICK_Y);  cx.lineTo(LANE_W - 4, KICK_Y);
@@ -943,6 +1074,7 @@ function drawTaiko(t) {
 }
 
 applyTheme(THEMES[0]);
+initLibrary();
 
 // Reset miss pointer on seek; clear game-over on any seek
 audio.addEventListener('seeked', () => {

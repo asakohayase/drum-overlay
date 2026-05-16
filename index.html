@@ -15,12 +15,18 @@
 
     <!-- Music player row -->
     <div class="player-row">
-      <button id="upload-btn" class="icon-btn" title="Load music file">📂</button>
+      <button id="upload-btn" class="upload-btn" title="Load music file">ADD ♪</button>
+      <button id="library-btn" class="library-btn" title="Music library">TRACKS ▾</button>
       <div class="track-info">
         <span id="track-name" class="track-name">no track loaded</span>
       </div>
       <button id="play-btn" class="play-btn" disabled title="Play / Pause (Space)">▶</button>
       <span id="time-display" class="time-display">0:00 / 0:00</span>
+    </div>
+
+    <!-- Library panel -->
+    <div id="library-panel" class="library-panel">
+      <div id="library-list" class="library-list"></div>
     </div>
 
     <!-- Progress bar -->

@@ -81,6 +81,27 @@ body {
 }
 .icon-btn:hover { background: rgba(255,255,255,0.16); }
 
+.upload-btn {
+  background: linear-gradient(135deg, #7B2FFF, #FF2D78);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 9px;
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  padding: 0 12px;
+  height: 32px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: box-shadow 0.15s, transform 0.12s;
+  box-shadow: 0 0 14px rgba(123,47,255,0.45), 0 0 6px rgba(255,45,120,0.3);
+}
+.upload-btn:hover {
+  box-shadow: 0 0 24px rgba(123,47,255,0.7), 0 0 14px rgba(255,45,120,0.5);
+  transform: scale(1.05);
+}
+
 .track-info {
   flex: 1;
   overflow: hidden;
@@ -168,7 +189,7 @@ body {
 #taiko-canvas {
   display: block;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.30);
+  background: rgba(6, 6, 18, 0.92);
 }
 
 .bpm-row {
@@ -340,6 +361,97 @@ body {
   letter-spacing: 2.5px;
   font-weight: 700;
   color: rgba(255,255,255,0.28);
+}
+
+.library-btn {
+  background: linear-gradient(135deg, #0ABFBC, #1565FF);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 9px;
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  padding: 0 10px;
+  height: 32px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: box-shadow 0.15s, transform 0.12s;
+  box-shadow: 0 0 14px rgba(10,191,188,0.4), 0 0 6px rgba(21,101,255,0.3);
+}
+.library-btn:hover {
+  box-shadow: 0 0 24px rgba(10,191,188,0.65), 0 0 14px rgba(21,101,255,0.5);
+  transform: scale(1.05);
+}
+
+/* ─── LIBRARY DROPDOWN ───────────────────────────────── */
+
+.library-panel {
+  position: absolute;
+  z-index: 500;
+  width: 230px;
+  background: rgba(8, 8, 22, 0.97);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 6px;
+  display: none;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+.library-panel.open { display: block; }
+
+.library-list {
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+.library-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.library-item:hover { background: rgba(255,255,255,0.07); }
+.library-item.current { background: rgba(255,255,255,0.05); }
+
+.lib-name {
+  flex: 1;
+  font-size: 11px;
+  font-family: 'Arial', sans-serif;
+  color: rgba(255,255,255,0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+
+.lib-remove {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.18);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.1s;
+}
+.lib-remove:hover { color: rgba(255,80,80,0.85); }
+
+.library-empty {
+  font-size: 11px;
+  font-family: 'Arial', sans-serif;
+  color: rgba(255,255,255,0.28);
+  text-align: center;
+  padding: 10px 0;
 }
 
 /* ─── FOOTER HINT ────────────────────────────────────── */
