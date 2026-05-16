@@ -1,6 +1,6 @@
 # drum-overlay
 
-A transparent macOS desktop overlay for drum practice. Load a music file, hit **F** and **J** to play along, and the app stays on top of everything — no dock icon, no distractions.
+A transparent macOS desktop overlay for drum practice. Load a music file, hit **F** and **J** to play along, and the app stays on top of everything.
 
 ## Requirements
 
@@ -19,7 +19,7 @@ npm install
 npm start
 ```
 
-The overlay appears as a full-screen transparent window on top of all your apps. A dark panel sits at the bottom-center — that's your drum pad, music player, and scrolling note lane. No dock icon; to quit, press **⌘ Shift Q** from anywhere.
+The overlay appears as a full-screen transparent window on top of all your apps. A dark panel sits at the bottom-center — that's your drum pad, music player, and scrolling note lane. To quit, press **⌘ Shift Q** from anywhere.
 
 ## Controls
 
@@ -44,7 +44,7 @@ MP3, WAV, OGG, M4A, AAC, FLAC
 - Progress bar with seek support, elapsed/total time, and track name display
 - Space to play/pause; click the progress bar to seek
 
-### Scrolling note lane (太鼓の達人-style)
+### Scrolling note lane
 - Automatically detects kick and snare hits from the loaded audio using onset detection
 - Estimates BPM from the song and displays two separate lanes (kick top, snare bottom)
 - Notes scroll from right to left; hit the target circle at the right time
