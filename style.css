@@ -29,7 +29,15 @@ body {
   box-shadow: 0 12px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
   z-index: 100;
   user-select: none;
+  cursor: grab;
 }
+
+.panel:active { cursor: grabbing; }
+
+.panel .pad,
+.panel .play-btn,
+.panel .icon-btn,
+.panel .progress-bar { cursor: pointer; }
 
 /* ─── DRAG HANDLE ────────────────────────────────────── */
 
@@ -129,7 +137,7 @@ body {
 .progress-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #FF6030, #FF9050);
+  background: linear-gradient(90deg, var(--prog-from), var(--prog-to));
   border-radius: 2px;
 }
 
@@ -148,6 +156,95 @@ body {
 }
 
 .progress-bar:hover .progress-thumb { opacity: 1; }
+
+/* ─── TAIKO LANE ─────────────────────────────────────── */
+
+.taiko-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#taiko-canvas {
+  display: block;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.30);
+}
+
+.bpm-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-picker {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.theme-select {
+  width: 64px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.65);
+  font-size: 11px;
+  font-family: 'Arial', sans-serif;
+  padding: 2px 5px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.theme-select:focus { outline: none; border-color: rgba(255,255,255,0.30); }
+
+.fail-btn {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.35);
+  font-size: 9px;
+  font-family: 'Arial', sans-serif;
+  padding: 2px 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.fail-btn.active {
+  border-color: rgba(255,70,70,0.60);
+  color: rgba(255,100,100,0.90);
+  background: rgba(255,30,30,0.12);
+}
+
+.bpm-label {
+  font-size: 9px;
+  font-family: 'Arial', sans-serif;
+  font-weight: 700;
+  color: rgba(255,255,255,0.32);
+  letter-spacing: 2px;
+}
+
+.bpm-input {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.65);
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  width: 50px;
+  padding: 2px 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.bpm-input:focus {
+  outline: none;
+  border-color: rgba(255,160,60,0.55);
+}
 
 /* ─── DRUM PADS ──────────────────────────────────────── */
 
@@ -187,40 +284,40 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── Left pad: warm / kick ── */
+/* ── Left pad: kick (driven by --k-* CSS vars) ── */
 .pad-left {
-  background: radial-gradient(circle at 38% 35%, #2a0e00 0%, #0d0400 100%);
-  border: 2px solid rgba(255, 90, 20, 0.30);
+  background: radial-gradient(circle at 38% 35%, var(--k-bg1) 0%, var(--k-bg2) 100%);
+  border: 2px solid rgba(var(--k-rgb), 0.30);
   box-shadow:
-    0 0 24px rgba(255, 70, 0, 0.15),
-    inset 0 0 24px rgba(255, 60, 0, 0.08);
+    0 0 24px rgba(var(--k-rgb), 0.15),
+    inset 0 0 24px rgba(var(--k-rgb), 0.08);
 }
 
 .pad-left.active {
   transform: scale(1.10);
-  border-color: rgba(255, 140, 50, 0.95);
+  border-color: var(--k-act-bdr);
   box-shadow:
-    0 0 50px rgba(255, 110, 20, 0.85),
-    0 0 100px rgba(255, 70, 0, 0.35),
-    inset 0 0 30px rgba(255, 90, 0, 0.25);
+    0 0 50px rgba(var(--k-rgb), 0.85),
+    0 0 100px rgba(var(--k-rgb), 0.35),
+    inset 0 0 30px rgba(var(--k-rgb), 0.25);
 }
 
-/* ── Right pad: cool / snare ── */
+/* ── Right pad: snare (driven by --s-* CSS vars) ── */
 .pad-right {
-  background: radial-gradient(circle at 38% 35%, #00102a 0%, #00040d 100%);
-  border: 2px solid rgba(20, 110, 255, 0.30);
+  background: radial-gradient(circle at 38% 35%, var(--s-bg1) 0%, var(--s-bg2) 100%);
+  border: 2px solid rgba(var(--s-rgb), 0.30);
   box-shadow:
-    0 0 24px rgba(0, 80, 255, 0.15),
-    inset 0 0 24px rgba(0, 70, 255, 0.08);
+    0 0 24px rgba(var(--s-rgb), 0.15),
+    inset 0 0 24px rgba(var(--s-rgb), 0.08);
 }
 
 .pad-right.active {
   transform: scale(1.10);
-  border-color: rgba(60, 150, 255, 0.95);
+  border-color: var(--s-act-bdr);
   box-shadow:
-    0 0 50px rgba(30, 120, 255, 0.85),
-    0 0 100px rgba(0, 80, 255, 0.35),
-    inset 0 0 30px rgba(0, 100, 255, 0.25);
+    0 0 50px rgba(var(--s-rgb), 0.85),
+    0 0 100px rgba(var(--s-rgb), 0.35),
+    inset 0 0 30px rgba(var(--s-rgb), 0.25);
 }
 
 /* Key letter */
@@ -231,11 +328,11 @@ body {
   transition: text-shadow 0.07s;
 }
 
-.pad-left  .pad-key { color: #FF7040; }
-.pad-right .pad-key { color: #4098FF; }
+.pad-left  .pad-key { color: var(--k-key); }
+.pad-right .pad-key { color: var(--s-key); }
 
-.pad-left.active  .pad-key { color: #FFAA70; text-shadow: 0 0 18px #FF8040, 0 0 40px #FF5000; }
-.pad-right.active .pad-key { color: #70C0FF; text-shadow: 0 0 18px #4090FF, 0 0 40px #0060FF; }
+.pad-left.active  .pad-key { color: var(--k-key-act); text-shadow: 0 0 18px var(--k-ts1), 0 0 40px var(--k-ts2); }
+.pad-right.active .pad-key { color: var(--s-key-act); text-shadow: 0 0 18px var(--s-ts1), 0 0 40px var(--s-ts2); }
 
 /* Label under key */
 .pad-label {

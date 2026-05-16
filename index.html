@@ -29,19 +29,28 @@
       <div id="progress-thumb" class="progress-thumb"></div>
     </div>
 
+    <!-- Taiko lane -->
+    <div class="taiko-row">
+      <canvas id="taiko-canvas"></canvas>
+      <div class="bpm-row">
+        <div id="theme-picker" class="theme-picker"></div>
+        <span class="bpm-label">BPM</span>
+        <input id="bpm-input" class="bpm-input" type="number" min="40" max="300" value="120" step="1">
+        <button id="fail-btn" class="fail-btn" title="Hard mode: miss 3 notes = game over">NORMAL</button>
+      </div>
+    </div>
+
     <!-- Drum pads -->
     <div class="pads-row">
       <div class="pad-wrap">
         <div id="pad-left" class="pad pad-left">
           <span class="pad-key">F</span>
-          <span class="pad-label">KICK</span>
         </div>
       </div>
       <div class="pad-divider"></div>
       <div class="pad-wrap">
         <div id="pad-right" class="pad pad-right">
           <span class="pad-key">J</span>
-          <span class="pad-label">SNARE</span>
         </div>
       </div>
     </div>
