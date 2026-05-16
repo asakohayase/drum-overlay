@@ -2,6 +2,8 @@
 
 A transparent macOS desktop overlay for drum practice. Load a music file, hit **F** and **J** to play along, and the app stays on top of everything.
 
+![preview](screenshots/preview_image.png)
+
 ## Requirements
 
 - macOS
@@ -28,7 +30,9 @@ The overlay appears as a full-screen transparent window on top of all your apps.
 | `F` | Kick drum |
 | `J` | Snare drum |
 | `Space` | Play / pause |
-| `📂` button | Load a music file |
+| `+` / `-` (numpad) | Scale panel up / down |
+| `ADD ♪` button | Load a music file |
+| `TRACKS ▾` button | Open music library |
 | Drag panel | Reposition the panel |
 | `⌘ Shift Q` | Quit (works from anywhere) |
 
@@ -39,6 +43,10 @@ The overlay appears as a full-screen transparent window on top of all your apps.
 MP3, WAV, OGG, M4A, AAC, FLAC
 
 ## Features
+
+### Music library
+- Previously loaded tracks are saved automatically — click `TRACKS ▾` to reopen them without re-uploading
+- Remove any track from the library with the ✕ button
 
 ### Music player
 - Progress bar with seek support, elapsed/total time, and track name display
@@ -53,11 +61,20 @@ MP3, WAV, OGG, M4A, AAC, FLAC
 ### Scoring
 - **Perfect** (±65 ms): +300 pts — **Good** (±130 ms): +100 pts — **Miss**: streak reset
 - Consecutive perfect hits build a streak; every 4 in a row triggers a particle explosion
-- End-of-song results screen: rating (S/A/B/C/D), score, accuracy %, perfect/good counts, max streak
+- End-of-song results screen: rating (SS/S/A/B/C/D), score, accuracy %, perfect/good counts, max streak
+
+| Rating | Accuracy |
+|---|---|
+| SS | 100% |
+| S | ≥ 95% |
+| A | ≥ 90% |
+| B | ≥ 80% |
+| C | ≥ 70% |
+| D | < 70% |
 
 ### Difficulty
 - **NORMAL** (default): play through the full song with no fail condition
-- **HARD**: miss 3 notes and the song stops with a FAILED screen — toggle the `NORMAL/HARD` button in the BPM row
+- **HARD**: miss 5 notes and the song stops — toggle the `NORMAL/HARD` button in the BPM row
 
 ### Themes
 Five switchable colour themes via the dropdown in the BPM row:

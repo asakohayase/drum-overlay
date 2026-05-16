@@ -1,3 +1,5 @@
+screenshots/*
+!screenshots/preview_image.png
 node_modules/
 dist/
 out/
