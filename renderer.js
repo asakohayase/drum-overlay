@@ -889,7 +889,7 @@ function drawScoreOverlay(cx) {
 
 // ── Main draw ───────────────────────────────────────────
 
-function drawTaiko(t) {
+function drawFrame(t) {
   const cx    = taikoCx;
   const railX = TARGET_X + NOTE_R + 10;
   cx.clearRect(0, 0, LANE_W, LANE_H);
@@ -1085,6 +1085,6 @@ audio.addEventListener('seeked', () => {
 audio.addEventListener('ended', () => { gameOver = true; });
 
 (function animateTaiko() {
-  drawTaiko(audio.currentTime || 0);
+  drawFrame(audio.currentTime || 0);
   requestAnimationFrame(animateTaiko);
 })();
