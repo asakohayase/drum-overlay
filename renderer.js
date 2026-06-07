@@ -522,7 +522,7 @@ themePicker.appendChild(themeSelect);
 
 // ── Audio analysis ──────────────────────────────────────
 
-async function detectOnsets(audioBuffer, filterType, freq, q, minGapSec = 0.12, percentile = 0.97) {
+async function detectOnsets(audioBuffer, filterType, freq, q, minGapSec = 0.22, percentile = 0.97) {
   const sr  = audioBuffer.sampleRate;
   const len = audioBuffer.length;
 
@@ -588,11 +588,11 @@ async function detectOnsets(audioBuffer, filterType, freq, q, minGapSec = 0.12, 
   return onsets;
 }
 
-function estimateBPM(kickTimes) {
-  if (kickTimes.length < 4) return 120;
+function estimateBPM(lowTimes) {
+  if (lowTimes.length < 4) return 120;
   const scores = new Map();
-  for (let i = 1; i < kickTimes.length; i++) {
-    const ioi = kickTimes[i] - kickTimes[i - 1];
+  for (let i = 1; i < lowTimes.length; i++) {
+    const ioi = lowTimes[i] - lowTimes[i - 1];
     if (ioi < 0.1 || ioi > 4.0) continue;
     // An IOI spanning n beats implies BPM = 60*n/ioi
     for (let n = 1; n <= 4; n++) {
@@ -615,24 +615,24 @@ async function analyzeSong(dataUrl) {
 
     // Kick: top 2% of low-freq spikes (< 100 Hz), 220ms min gap.
     // Snare: top 3% of mid-freq spikes (bandpass ~1.6-3.3 kHz), 220ms min gap.
-    const [kickTimes, snareTimes] = await Promise.all([
+    const [lowTimes, highTimes] = await Promise.all([
       detectOnsets(buf, 'lowpass',  100, 1.0, 0.22, 0.98),
       detectOnsets(buf, 'bandpass', 2500, 1.5, 0.22, 0.97),
     ]);
 
-    console.log(`[drum] kick: ${kickTimes.length}  snare: ${snareTimes.length}  duration: ${buf.duration.toFixed(1)}s`);
+    console.log(`[drum] kick: ${lowTimes.length}  snare: ${highTimes.length}  duration: ${buf.duration.toFixed(1)}s`);
 
     // Drop snare onsets that coincide with a kick (within 60ms)
-    const snareFiltered = snareTimes.filter(st =>
-      !kickTimes.some(kt => Math.abs(kt - st) < 0.06)
+    const snareFiltered = highTimes.filter(st =>
+      !lowTimes.some(kt => Math.abs(kt - st) < 0.06)
     );
 
     songEvents = [
-      ...kickTimes.map(t => ({ time: t, type: 'kick' })),
+      ...lowTimes.map(t => ({ time: t, type: 'kick' })),
       ...snareFiltered.map(t => ({ time: t, type: 'snare' })),
     ].sort((a, b) => a.time - b.time);
 
-    bpm = estimateBPM(kickTimes);
+    bpm = estimateBPM(lowTimes);
     bpmInput.value = bpm;
     console.log(`[drum] BPM: ${bpm}  total events: ${songEvents.length}`);
   } catch (err) {
