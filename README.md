@@ -1,4 +1,4 @@
-# drum-overlay
+# Rhythm Game That Lives Above Your IDE
 
 A transparent macOS desktop overlay for drum practice. Load a music file, hit **F** and **J** to play along, and the app stays on top of everything.
 
